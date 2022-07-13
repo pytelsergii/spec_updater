@@ -1,5 +1,7 @@
 from selenium.webdriver.common.by import By
 
+"""Locators for websites that currently supported"""
+
 locators = {
     'jysk.ua': {
         'name': (By.CSS_SELECTOR, 'div.product-name-sku span.product-name'),

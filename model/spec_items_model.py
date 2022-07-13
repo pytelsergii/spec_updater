@@ -1,53 +1,46 @@
+import logging
 import urllib.parse
 
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service as ChromeService
-from webdriver_manager.chrome import ChromeDriverManager
-
 from model.locators import locators
-from model.web_page import ProductWebPage
-from model.product import Product
+from model.spec_item import SpecItem
+from model.item_page import ItemWebPage
+from utils import str_utils
+
+from selenium.webdriver.remote.webdriver import WebDriver
+
+logger = logging.getLogger(__name__)
 
 
 class SpecItemsModel:
-    def __init__(self):
-        pass
+    def __init__(self, driver):
+        self._driver: WebDriver = driver
 
-    @staticmethod
-    def price_str_to_float(price_str):
-        price_str = price_str.replace(',', '.')
-        formatted_price = ''.join(i for i in price_str if i.isdigit() or i == '.')
-        if formatted_price.endswith('.'):
-            formatted_price = formatted_price[:-1]
-        try:
-            price = float(''.join(formatted_price))
-        except ValueError:
-            price = 0
-        return price
-
-    def get_products(self, urls):
-        products = []
+    def get_spec_items(self, urls: list[str]) -> list[SpecItem]:
+        items = []
 
         for url in urls:
+            logger.info(f'Trying to get details for - {url}')
             locator_key = urllib.parse.urlparse(url).netloc
-            print(locator_key)
+            logger.info(f'Locator key is {locator_key}')
 
             if locator_key in locators:
-                options = Options()
-                options.headless = False
-
-                driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
-
-                product_page = ProductWebPage(driver, url, locators[locator_key])
+                # Switching to a new tab for each page
+                self._driver.switch_to.new_window('tab')
+                product_page = ItemWebPage(self._driver, url, locators[locator_key])
                 product_page.open()
 
-                name = product_page.product_name()
-                price = self.price_str_to_float(product_page.product_price())
-                image = product_page.product_image()
+                name = product_page.name()
+                price = str_utils.str_price_to_float(product_page.price())
+                image_url = product_page.image_url()
 
-                products.append(Product(name, price, image))
+                logger.info(f'Item name: {name}')
+                logger.info(f'Item price: {price}')
+                logger.info(f'Item image_url: {image_url}')
+                items.append(SpecItem(name, price, image_url))
             else:
-                products.append(Product('NOT FOUND', 'NOT FOUND', ''))
+                logger.warning(f'Locator key - {locator_key} is not present in specified locators')
+                items.append(SpecItem('NOT FOUND', 'NOT FOUND', 'NOT FOUND'))
 
-        return products
+        # Quit driver after getting all details
+        self._driver.quit()
+        return items

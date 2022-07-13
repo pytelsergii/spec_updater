@@ -1,6 +1,6 @@
 import re
 
-from gspread import Worksheet
+from gspread import Worksheet, Cell
 
 
 class SpreadSheetView:
@@ -12,20 +12,20 @@ class SpreadSheetView:
         self._worksheet: Worksheet = worksheet
 
     @property
-    def working_cells(self):
+    def working_cells(self) -> list[Cell]:
         search_criteria = re.compile(r'(http|https)')
         return self._worksheet.findall(search_criteria)
 
-    def get_spec_items_urls(self):
+    def get_spec_items_urls(self) -> list[str]:
         return [cell.value for cell in self.working_cells]
 
-    def update(self, products):
+    def update(self, products) -> None:
         for cell, product in zip(self.working_cells, products):
             self._worksheet.update_cell(cell.row, self.COLUMN_PRODUCT_NAME_INDEX, product.name)
             self._worksheet.update_cell(cell.row, self.COLUMN_PRODUCT_PRICE_INDEX, product.price)
-            self._worksheet.update_cell(cell.row, self.COLUMN_PRODUCT_IMAGE_INDEX, f'=image("{product.image}")')
+            self._worksheet.update_cell(cell.row, self.COLUMN_PRODUCT_IMAGE_INDEX, f'=image("{product.image_url}")')
 
-    def clear_previous_values(self, ):
+    def clear_previous_values(self) -> None:
         for cell in self.working_cells:
             self._worksheet.update_cell(cell.row, self.COLUMN_PRODUCT_NAME_INDEX, '')
             self._worksheet.update_cell(cell.row, self.COLUMN_PRODUCT_PRICE_INDEX, '')
