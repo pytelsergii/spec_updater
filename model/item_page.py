@@ -25,14 +25,17 @@ class ItemWebPage:
             logger.warning(e)
         return element
 
+    @property
     def name(self) -> str:
         name = self._find_element(self._spect_item_locators['name'])
         return name.text if name else ''
 
+    @property
     def price(self) -> str:
         price = self._find_element(self._spect_item_locators['price'])
         return price.text if price else ''
 
+    @property
     def image_url(self) -> str:
         image_url = self._find_element(self._spect_item_locators['image'])
         return image_url.get_attribute("src") if image_url else ''

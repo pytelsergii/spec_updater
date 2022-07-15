@@ -1,5 +1,6 @@
 from model.spec_items_model import SpecItemsModel
 from view.spreadsheet_view import SpreadSheetView
+from model.locators import locators
 
 
 class SpecController:
@@ -9,7 +10,7 @@ class SpecController:
 
     def update_spec(self) -> None:
         urls = self._view.get_spec_items_urls()
-        products = self._model.get_spec_items(urls)
+        products = self._model.get_spec_items(urls, locators)
         self._view.update(products)
 
     def clear_spec(self) -> None:
