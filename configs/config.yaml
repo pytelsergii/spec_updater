@@ -1,5 +1,5 @@
 driver:
-  driver_option: Chrome # options: [Chrome, Firefox]
+  driver_option: Firefox # options: [Chrome, Firefox]
   headless: True
 
 logging:
